@@ -338,3 +338,184 @@ int sysconf(int name) {
         return -1;
     }
 }
+
+typedef struct {
+    int   rpos;
+    int   len;
+    int   overflow;
+    int   fd;
+    int   in_len;
+    int   in_pos;
+    char  buff[128];
+    char  input[128];
+} LineParser;
+
+static int
+line_parser_init( LineParser*  p, const char*  path )
+{
+    p->rpos     = 0;
+    p->len      = (int)sizeof(p->buff);
+    p->overflow = 0;
+
+    p->in_len   = 0;
+    p->in_pos   = 0;
+    p->fd       = open( path, O_RDONLY );
+
+    return p->fd;
+}
+
+
+static int
+line_parser_addc( LineParser*  p, int  c )
+{
+    if (p->overflow) {
+        p->overflow = (c == '\n');
+        return 0;
+    }
+    if (p->rpos >= p->len) {
+        p->overflow = 1;
+        return 0;
+    }
+    if (c == '\n') {
+        p->buff[p->rpos] = 0;
+        p->rpos = 0;
+        return 1;
+    }
+    p->buff[p->rpos++] = (char) c;
+    return 0;
+}
+
+static int
+line_parser_getc( LineParser*  p )
+{
+    if (p->in_pos >= p->in_len) {
+        int  ret;
+
+        p->in_len = p->in_pos = 0;
+        do {
+            ret = read(p->fd, p->input, sizeof(p->input));
+        } while (ret < 0 && errno == EINTR);
+
+        if (ret <= 0)
+            return -1;
+
+        p->in_len = ret;
+    }
+    return p->input[ p->in_pos++ ];
+}
+
+static const char*
+line_parser_gets( LineParser*  p )
+{
+    for (;;) {
+        for (;;) {
+            int  c = line_parser_getc(p);
+
+            if (c < 0) {
+                close(p->fd);
+                p->fd = -1;
+                return NULL;
+             }
+             if (line_parser_addc(p, c))
+                return p->buff;
+        }
+    }
+}
+
+static void
+line_parser_done( LineParser* p )
+{
+    if (p->fd >= 0) {
+        close(p->fd);
+        p->fd = -1;
+    }
+}
+
+static int
+__get_nproc_conf(void)
+{
+    LineParser   parser[1];
+    const char*  p;
+    int          count = 0;
+
+#ifdef QCOM_HARDWARE
+    if (line_parser_init(parser, "/sys/devices/system/cpu/present") < 0)
+#else
+    if (line_parser_init(parser, "/proc/cpuinfo") < 0)
+#endif
+        return 1;
+
+    while ((p = line_parser_gets(parser))) {
+#ifdef QCOM_HARDWARE
+        if ( sscanf(p, "0-%d", &count) == 1 )
+#else
+        if ( !memcmp(p, "processor", 9) )
+#endif
+            count += 1;
+    }
+    return (count < 1) ? 1 : count;
+}
+
+
+static int
+__get_nproc_onln(void)
+{
+    LineParser   parser[1];
+    const char*  p;
+    int          count = 0;
+
+#ifdef QCOM_HARDWARE
+    if (line_parser_init(parser, "/sys/devices/system/cpu/present") < 0)
+#else
+    if (line_parser_init(parser, "/proc/stat") < 0)
+#endif
+        return 1;
+
+    while ((p = line_parser_gets(parser))) {
+#ifdef QCOM_HARDWARE
+        if ( sscanf(p, "0-%d", &count) == 1 )
+#else
+        if ( !memcmp(p, "cpu", 3) && isdigit(p[3]) )
+#endif
+            count += 1;
+    }
+    return (count < 1) ? 1 : count;
+}
+
+static int
+__get_phys_pages(void)
+{
+    LineParser   parser[1];
+    const char*  p;
+
+    if (line_parser_init(parser, "/proc/meminfo") < 0)
+        return -2;  /* what ? */
+
+    while ((p = line_parser_gets(parser))) {
+        long  total;
+        if ( sscanf(p, "MemTotal: %ld kB", &total) == 1 ) {
+            line_parser_done(parser);
+            return (int) (total / (PAGE_SIZE/1024));
+        }
+    }
+    return -3;
+}
+
+static int
+__get_avphys_pages(void)
+{
+    LineParser   parser[1];
+    const char*  p;
+
+    if (line_parser_init(parser, "/proc/meminfo") < 0)
+        return -1;  /* what ? */
+
+    while ((p = line_parser_gets(parser))) {
+        long  total;
+        if ( sscanf(p, "MemFree: %ld kB", &total) == 1 ) {
+            line_parser_done(parser);
+            return (int) (total / (PAGE_SIZE/1024));
+        }
+    }
+    return -1;
+}
