@@ -648,6 +648,28 @@ LOCAL_SRC_FILES := bionic/ssp.c
 LOCAL_CFLAGS := $(libc_common_cflags) -fno-stack-protector
 LOCAL_C_INCLUDES := $(libc_common_c_includes)
 LOCAL_MODULE := libbionic_ssp
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
+LOCAL_SYSTEM_SHARED_LIBRARIES :=
+
+include $(BUILD_STATIC_LIBRARY)
+
+
+# ========================================================
+# libc_netbsd.a - upstream NetBSD C library code
+# ========================================================
+#
+# These files are built with the netbsd-compat.h header file
+# automatically included.
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(libc_upstream_netbsd_src_files)
+LOCAL_CFLAGS := \
+    $(libc_common_cflags) \
+    -include upstream-netbsd/netbsd-compat.h
+LOCAL_C_INCLUDES := $(libc_common_c_includes)
+LOCAL_MODULE := libc_netbsd
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
 
 include $(BUILD_STATIC_LIBRARY)
@@ -665,7 +687,8 @@ LOCAL_CFLAGS += -DCRT_LEGACY_WORKAROUND
 endif
 LOCAL_C_INCLUDES := $(libc_common_c_includes)
 LOCAL_MODULE := libc_common
-LOCAL_WHOLE_STATIC_LIBRARIES := libbionic_ssp
+LOCAL_WHOLE_STATIC_LIBRARIES := libbionic_ssp libc_netbsd
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
 
 include $(BUILD_STATIC_LIBRARY)
@@ -693,6 +716,7 @@ LOCAL_CFLAGS := $(libc_common_cflags) \
                 -DLIBC_STATIC
 
 LOCAL_MODULE := libc_nomalloc
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 LOCAL_WHOLE_STATIC_LIBRARIES := libc_common
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
 
@@ -715,6 +739,7 @@ LOCAL_CFLAGS := $(libc_common_cflags) \
                 -DLIBC_STATIC
 LOCAL_C_INCLUDES := $(libc_common_c_includes)
 LOCAL_MODULE := libc
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 LOCAL_WHOLE_STATIC_LIBRARIES := libc_common
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
 
@@ -750,6 +775,7 @@ LOCAL_SRC_FILES := \
 	bionic/libc_init_dynamic.c
 
 LOCAL_MODULE:= libc
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 # WARNING: The only library libc.so should depend on is libdl.so!  If you add other libraries,
 # make sure to add -Wl,--exclude-libs=libgcc.a to the LOCAL_LDFLAGS for those libraries.  This
@@ -792,6 +818,7 @@ LOCAL_SRC_FILES := \
 	bionic/malloc_debug_stacktrace.c
 
 LOCAL_MODULE:= libc_malloc_debug_leak
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 LOCAL_SHARED_LIBRARIES := libc
 LOCAL_WHOLE_STATIC_LIBRARIES := libc_common
@@ -819,6 +846,7 @@ LOCAL_SRC_FILES := \
 	bionic/malloc_debug_qemu.c
 
 LOCAL_MODULE:= libc_malloc_debug_qemu
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 LOCAL_SHARED_LIBRARIES := libc libdl
 LOCAL_WHOLE_STATIC_LIBRARIES := libc_common

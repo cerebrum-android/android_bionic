@@ -219,6 +219,7 @@ LOCAL_C_INCLUDES += $(libm_common_includes)
 LOCAL_CFLAGS:= $(libm_common_cflags)
 
 LOCAL_MODULE:= libm
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 LOCAL_SYSTEM_SHARED_LIBRARIES := libc
 
@@ -239,6 +240,7 @@ LOCAL_C_INCLUDES += $(libm_common_includes)
 LOCAL_CFLAGS:= $(libm_common_cflags)
 
 LOCAL_MODULE:= libm
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 LOCAL_SYSTEM_SHARED_LIBRARIES := libc
 
