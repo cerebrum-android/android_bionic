@@ -776,6 +776,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_MODULE:= libc
 LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
+LOCAL_REQUIRED_MODULES := tzdata
 
 # WARNING: The only library libc.so should depend on is libdl.so!  If you add other libraries,
 # make sure to add -Wl,--exclude-libs=libgcc.a to the LOCAL_LDFLAGS for those libraries.  This
