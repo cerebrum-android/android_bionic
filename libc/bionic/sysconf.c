@@ -76,6 +76,48 @@ static bool __matches_cpuN(const char* s) {
   return (sscanf(s, "cpu%u%c", &cpu, &dummy) == 1);
 }
 
+static int __get_nproc_conf(void) {
+  // On x86 kernels you can use /proc/cpuinfo for this, but on ARM kernels offline CPUs disappear
+  // from there. This method works on both.
+  DIR* d = opendir("/sys/devices/system/cpu");
+  if (!d) {
+    return 1;
+  }
+
+  int result = 0;
+  struct dirent* e;
+  while ((e = readdir(d)) != NULL) {
+    if (e->d_type == DT_DIR && __matches_cpuN(e->d_name)) {
+      ++result;
+    }
+  }
+  closedir(d);
+  return result;
+}
+
+static int __get_nproc_onln(void) {
+  FILE* fp = fopen("/proc/stat", "r");
+  if (fp == NULL) {
+    return 1;
+  }
+
+  int result = 0;
+  char buf[256];
+  while (fgets(buf, sizeof(buf), fp) != NULL) {
+    // Extract just the first word from the line.
+    // 'cpu0 7976751 1364388 3116842 469770388 8629405 0 49047 0 0 0'
+    char* p = strchr(buf, ' ');
+    if (p != NULL) {
+      *p = 0;
+    }
+    if (__matches_cpuN(buf)) {
+      ++result;
+    }
+  }
+  fclose(fp);
+  return result;
+}
+
 static int __get_meminfo(const char* pattern) {
   FILE* fp = fopen("/proc/meminfo", "r");
   if (fp == NULL) {
@@ -93,6 +135,14 @@ static int __get_meminfo(const char* pattern) {
   }
   fclose(fp);
   return result;
+}
+
+static int __get_phys_pages(void) {
+  return __get_meminfo("MemTotal: %ld kB");
+}
+
+static int __get_avphys_pages(void) {
+  return __get_meminfo("MemFree: %ld kB");
 }
 
 int sysconf(int name) {
