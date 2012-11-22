@@ -1,23 +1,32 @@
+/*	$NetBSD: sha1.h,v 1.13 2005/12/26 18:41:36 perry Exp $	*/
+
 /*
- * Copyright (C) 2012 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SHA-1 in C
+ * By Steve Reid <steve@edmweb.com>
+ * 100% Public Domain
  */
 
-#ifndef _SHA1_H_
-#define _SHA1_H_
+#ifndef _SYS_SHA1_H_
+#define	_SYS_SHA1_H_
 
-#warning "include <sys/sha1.h> instead for better portability"
-#include <sys/sha1.h>
+#include <sys/cdefs.h>
+#include <sys/types.h>
 
-#endif
+#define SHA1_DIGEST_LENGTH		20
+#define SHA1_BLOCK_SIZE 		64
+
+typedef struct {
+    uint64_t count;
+    uint32_t state[SHA1_DIGEST_LENGTH / 4];
+    uint8_t buffer[SHA1_BLOCK_SIZE];
+} SHA1_CTX;
+
+__BEGIN_DECLS
+void	SHA1Transform(uint32_t[SHA1_DIGEST_LENGTH/4],
+	              const uint8_t[SHA1_BLOCK_SIZE]);
+void	SHA1Init(SHA1_CTX *);
+void	SHA1Update(SHA1_CTX *, const uint8_t *, unsigned int);
+void	SHA1Final(uint8_t[SHA1_DIGEST_LENGTH], SHA1_CTX *);
+__END_DECLS
+
+#endif /* _SYS_SHA1_H_ */

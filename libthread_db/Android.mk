@@ -1,7 +1,7 @@
 LOCAL_PATH:= $(call my-dir)
 
 #
-# static
+# static 
 #
 
 include $(CLEAR_VARS)
@@ -10,7 +10,6 @@ LOCAL_SRC_FILES:= \
 	libthread_db.c
 
 LOCAL_MODULE:= libthread_db
-LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -21,8 +20,7 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_WHOLE_STATIC_LIBRARIES := libthread_db
-LOCAL_MODULE := libthread_db
-LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
+LOCAL_MODULE:=libthread_db
 LOCAL_SHARED_LIBRARIES := libdl libc
 LOCAL_ALLOW_UNDEFINED_SYMBOLS := false
 LOCAL_SYSTEM_SHARED_LIBRARIES :=

@@ -102,7 +102,7 @@ name:					\
 	/* calculate left number to compare */		\
 	mov	$16, %esi;				\
 	sub	%ecx, %esi;				\
-	cmpl	%esi, %ebp;				\
+	cmp	%esi, %ebp;				\
 	jbe	L(more8byteseq);			\
 	sub	%esi, %ebp
 #endif
@@ -116,7 +116,7 @@ ENTRY (ssse3_strcmp_latest)
 	movl	STR2(%esp), %eax
 #ifdef USE_AS_STRNCMP
 	movl	CNT(%esp), %ebp
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	jb	L(less16bytes_sncmp)
 	jmp	L(more16bytes)
 #endif
@@ -172,18 +172,18 @@ ENTRY (ssse3_strcmp_latest)
 	add	$8, %edx
 	add	$8, %eax
 #ifdef USE_AS_STRNCMP
-	cmpl	$8, %ebp
+	cmp	$8, %ebp
 	lea	-8(%ebp), %ebp
 	je	L(eq)
 L(more16bytes):
 #endif
 	movl	%edx, %ecx
 	and	$0xfff, %ecx
-	cmpl	$0xff0, %ecx
+	cmp	$0xff0, %ecx
 	ja	L(crosspage)
 	mov	%eax, %ecx
 	and	$0xfff, %ecx
-	cmpl	$0xff0, %ecx
+	cmp	$0xff0, %ecx
 	ja	L(crosspage)
 	pxor	%xmm0, %xmm0
 	movlpd	(%eax), %xmm1
@@ -197,7 +197,7 @@ L(more16bytes):
 	sub	$0xffff, %ecx
 	jnz	L(less16bytes)
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(eq)
 #endif
@@ -220,7 +220,7 @@ L(crosspage):
 	xor	%ecx, %eax
 	xor	%edi, %edx
 	xor	%ebx, %ebx
-	cmpl	%edi, %ecx
+	cmp	%edi, %ecx
 	je	L(ashr_0)
 	ja	L(bigger)
 	or	$0x20, %ebx
@@ -229,37 +229,37 @@ L(crosspage):
 L(bigger):
 	lea	15(%edi), %edi
 	sub	%ecx, %edi
-	cmpl	$8, %edi
+	cmp	$8, %edi
 	jle	L(ashr_less_8)
-	cmpl	$14, %edi
+	cmp	$14, %edi
 	je	L(ashr_15)
-	cmpl	$13, %edi
+	cmp	$13, %edi
 	je	L(ashr_14)
-	cmpl	$12, %edi
+	cmp	$12, %edi
 	je	L(ashr_13)
-	cmpl	$11, %edi
+	cmp	$11, %edi
 	je	L(ashr_12)
-	cmpl	$10, %edi
+	cmp	$10, %edi
 	je	L(ashr_11)
-	cmpl	$9, %edi
+	cmp	$9, %edi
 	je	L(ashr_10)
 L(ashr_less_8):
 	je	L(ashr_9)
-	cmpl	$7, %edi
+	cmp	$7, %edi
 	je	L(ashr_8)
-	cmpl	$6, %edi
+	cmp	$6, %edi
 	je	L(ashr_7)
-	cmpl	$5, %edi
+	cmp	$5, %edi
 	je	L(ashr_6)
-	cmpl	$4, %edi
+	cmp	$4, %edi
 	je	L(ashr_5)
-	cmpl	$3, %edi
+	cmp	$3, %edi
 	je	L(ashr_4)
-	cmpl	$2, %edi
+	cmp	$2, %edi
 	je	L(ashr_3)
-	cmpl	$1, %edi
+	cmp	$1, %edi
 	je	L(ashr_2)
-	cmpl	$0, %edi
+	cmp	$0, %edi
 	je	L(ashr_1)
 
 /*
@@ -297,7 +297,7 @@ L(loop_ashr_0):
 	sub	$0xffff, %esi
 	jnz	L(exit)
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -355,7 +355,7 @@ L(gobble_ashr_1):
 	sub	$0xffff, %esi
 	jnz	L(exit)
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -380,7 +380,7 @@ L(gobble_ashr_1):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -396,7 +396,7 @@ L(nibble_ashr_1):
 	jnz	L(ashr_1_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$15, %ebp
+	cmp	$15, %ebp
 	jbe	L(ashr_1_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -462,7 +462,7 @@ L(gobble_ashr_2):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -486,7 +486,7 @@ L(gobble_ashr_2):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -502,7 +502,7 @@ L(nibble_ashr_2):
 	jnz	L(ashr_2_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$14, %ebp
+	cmp	$14, %ebp
 	jbe	L(ashr_2_exittail)
 #endif
 
@@ -569,7 +569,7 @@ L(gobble_ashr_3):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -593,7 +593,7 @@ L(gobble_ashr_3):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -609,7 +609,7 @@ L(nibble_ashr_3):
 	jnz	L(ashr_3_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$13, %ebp
+	cmp	$13, %ebp
 	jbe	L(ashr_3_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -675,7 +675,7 @@ L(gobble_ashr_4):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -700,7 +700,7 @@ L(gobble_ashr_4):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -717,7 +717,7 @@ L(nibble_ashr_4):
 	jnz	L(ashr_4_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$12, %ebp
+	cmp	$12, %ebp
 	jbe	L(ashr_4_exittail)
 #endif
 
@@ -784,7 +784,7 @@ L(gobble_ashr_5):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -808,7 +808,7 @@ L(gobble_ashr_5):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -824,7 +824,7 @@ L(nibble_ashr_5):
 	jnz	L(ashr_5_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$11, %ebp
+	cmp	$11, %ebp
 	jbe	L(ashr_5_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -891,7 +891,7 @@ L(gobble_ashr_6):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -915,7 +915,7 @@ L(gobble_ashr_6):
 	sub	$0xffff, %esi
 	jnz	L(exit)
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -932,7 +932,7 @@ L(nibble_ashr_6):
 	jnz	L(ashr_6_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$10, %ebp
+	cmp	$10, %ebp
 	jbe	L(ashr_6_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -999,7 +999,7 @@ L(gobble_ashr_7):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1024,7 +1024,7 @@ L(gobble_ashr_7):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1041,7 +1041,7 @@ L(nibble_ashr_7):
 	jnz	L(ashr_7_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$9, %ebp
+	cmp	$9, %ebp
 	jbe	L(ashr_7_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1108,7 +1108,7 @@ L(gobble_ashr_8):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1132,7 +1132,7 @@ L(gobble_ashr_8):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1148,7 +1148,7 @@ L(nibble_ashr_8):
 	jnz	L(ashr_8_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$8, %ebp
+	cmp	$8, %ebp
 	jbe	L(ashr_8_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1215,7 +1215,7 @@ L(gobble_ashr_9):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1239,7 +1239,7 @@ L(gobble_ashr_9):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1255,7 +1255,7 @@ L(nibble_ashr_9):
 	jnz	L(ashr_9_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$7, %ebp
+	cmp	$7, %ebp
 	jbe	L(ashr_9_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1321,7 +1321,7 @@ L(gobble_ashr_10):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1345,7 +1345,7 @@ L(gobble_ashr_10):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1361,7 +1361,7 @@ L(nibble_ashr_10):
 	jnz	L(ashr_10_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$6, %ebp
+	cmp	$6, %ebp
 	jbe	L(ashr_10_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1427,7 +1427,7 @@ L(gobble_ashr_11):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1451,7 +1451,7 @@ L(gobble_ashr_11):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1467,7 +1467,7 @@ L(nibble_ashr_11):
 	jnz	L(ashr_11_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$5, %ebp
+	cmp	$5, %ebp
 	jbe	L(ashr_11_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1533,7 +1533,7 @@ L(gobble_ashr_12):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1558,7 +1558,7 @@ L(gobble_ashr_12):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1574,7 +1574,7 @@ L(nibble_ashr_12):
 	jnz	L(ashr_12_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$4, %ebp
+	cmp	$4, %ebp
 	jbe	L(ashr_12_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1640,7 +1640,7 @@ L(gobble_ashr_13):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1664,7 +1664,7 @@ L(gobble_ashr_13):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1680,7 +1680,7 @@ L(nibble_ashr_13):
 	jnz	L(ashr_13_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$3, %ebp
+	cmp	$3, %ebp
 	jbe	L(ashr_13_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1746,7 +1746,7 @@ L(gobble_ashr_14):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1770,7 +1770,7 @@ L(gobble_ashr_14):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1786,7 +1786,7 @@ L(nibble_ashr_14):
 	jnz	L(ashr_14_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$2, %ebp
+	cmp	$2, %ebp
 	jbe	L(ashr_14_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1853,7 +1853,7 @@ L(gobble_ashr_15):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1877,7 +1877,7 @@ L(gobble_ashr_15):
 	jnz	L(exit)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$16, %ebp
+	cmp	$16, %ebp
 	lea	-16(%ebp), %ebp
 	jbe	L(more8byteseq)
 #endif
@@ -1893,7 +1893,7 @@ L(nibble_ashr_15):
 	jnz	L(ashr_15_exittail)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$1, %ebp
+	cmp	$1, %ebp
 	jbe	L(ashr_15_exittail)
 #endif
 	pxor	%xmm0, %xmm0
@@ -1955,12 +1955,12 @@ L(less16bytes):
 	test	$0x40, %cl
 	jnz	L(Byte6)
 #ifdef USE_AS_STRNCMP
-	cmpl	$7, %ebp
+	cmp	$7, %ebp
 	jbe	L(eq)
 #endif
 
-	movzbl	7(%eax), %ecx
-	movzbl	7(%edx), %eax
+	movzx	7(%eax), %ecx
+	movzx	7(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -1968,11 +1968,11 @@ L(less16bytes):
 	.p2align 4
 L(Byte0):
 #ifdef USE_AS_STRNCMP
-	cmpl	$0, %ebp
+	cmp	$0, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	(%eax), %ecx
-	movzbl	(%edx), %eax
+	movzx	(%eax), %ecx
+	movzx	(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -1980,11 +1980,11 @@ L(Byte0):
 	.p2align 4
 L(Byte1):
 #ifdef USE_AS_STRNCMP
-	cmpl	$1, %ebp
+	cmp	$1, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	1(%eax), %ecx
-	movzbl	1(%edx), %eax
+	movzx	1(%eax), %ecx
+	movzx	1(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -1992,11 +1992,11 @@ L(Byte1):
 	.p2align 4
 L(Byte2):
 #ifdef USE_AS_STRNCMP
-	cmpl	$2, %ebp
+	cmp	$2, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	2(%eax), %ecx
-	movzbl	2(%edx), %eax
+	movzx	2(%eax), %ecx
+	movzx	2(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -2004,11 +2004,11 @@ L(Byte2):
 	.p2align 4
 L(Byte3):
 #ifdef USE_AS_STRNCMP
-	cmpl	$3, %ebp
+	cmp	$3, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	3(%eax), %ecx
-	movzbl	3(%edx), %eax
+	movzx	3(%eax), %ecx
+	movzx	3(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -2016,11 +2016,11 @@ L(Byte3):
 	.p2align 4
 L(Byte4):
 #ifdef USE_AS_STRNCMP
-	cmpl	$4, %ebp
+	cmp	$4, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	4(%eax), %ecx
-	movzbl	4(%edx), %eax
+	movzx	4(%eax), %ecx
+	movzx	4(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -2028,11 +2028,11 @@ L(Byte4):
 	.p2align 4
 L(Byte5):
 #ifdef USE_AS_STRNCMP
-	cmpl	$5, %ebp
+	cmp	$5, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	5(%eax), %ecx
-	movzbl	5(%edx), %eax
+	movzx	5(%eax), %ecx
+	movzx	5(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -2040,11 +2040,11 @@ L(Byte5):
 	.p2align 4
 L(Byte6):
 #ifdef USE_AS_STRNCMP
-	cmpl	$6, %ebp
+	cmp	$6, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	6(%eax), %ecx
-	movzbl	6(%edx), %eax
+	movzx	6(%eax), %ecx
+	movzx	6(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -2054,7 +2054,7 @@ L(2next_8_bytes):
 	add	$8, %eax
 	add	$8, %edx
 #ifdef USE_AS_STRNCMP
-	cmpl	$8, %ebp
+	cmp	$8, %ebp
 	lea	-8(%ebp), %ebp
 	jbe	L(eq)
 #endif
@@ -2081,11 +2081,11 @@ L(2next_8_bytes):
 	jnz	L(Byte6)
 
 #ifdef USE_AS_STRNCMP
-	cmpl	$7, %ebp
+	cmp	$7, %ebp
 	jbe	L(eq)
 #endif
-	movzbl	7(%eax), %ecx
-	movzbl	7(%edx), %eax
+	movzx	7(%eax), %ecx
+	movzx	7(%edx), %eax
 
 	sub	%ecx, %eax
 	RETURN
@@ -2129,7 +2129,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$1, %ebp
+	cmp	$1, %ebp
 	je	L(eq)
 
 	movzbl	1(%eax), %ecx
@@ -2138,7 +2138,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$2, %ebp
+	cmp	$2, %ebp
 	je	L(eq)
 
 	movzbl	2(%eax), %ecx
@@ -2147,7 +2147,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$3, %ebp
+	cmp	$3, %ebp
 	je	L(eq)
 
 	movzbl	3(%eax), %ecx
@@ -2156,7 +2156,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$4, %ebp
+	cmp	$4, %ebp
 	je	L(eq)
 
 	movzbl	4(%eax), %ecx
@@ -2165,7 +2165,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$5, %ebp
+	cmp	$5, %ebp
 	je	L(eq)
 
 	movzbl	5(%eax), %ecx
@@ -2174,7 +2174,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$6, %ebp
+	cmp	$6, %ebp
 	je	L(eq)
 
 	movzbl	6(%eax), %ecx
@@ -2183,7 +2183,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$7, %ebp
+	cmp	$7, %ebp
 	je	L(eq)
 
 	movzbl	7(%eax), %ecx
@@ -2193,7 +2193,7 @@ L(less16bytes_sncmp):
 	je	L(eq)
 
 
-	cmpl	$8, %ebp
+	cmp	$8, %ebp
 	je	L(eq)
 
 	movzbl	8(%eax), %ecx
@@ -2202,7 +2202,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$9, %ebp
+	cmp	$9, %ebp
 	je	L(eq)
 
 	movzbl	9(%eax), %ecx
@@ -2211,7 +2211,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$10, %ebp
+	cmp	$10, %ebp
 	je	L(eq)
 
 	movzbl	10(%eax), %ecx
@@ -2220,7 +2220,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$11, %ebp
+	cmp	$11, %ebp
 	je	L(eq)
 
 	movzbl	11(%eax), %ecx
@@ -2230,7 +2230,7 @@ L(less16bytes_sncmp):
 	je	L(eq)
 
 
-	cmpl	$12, %ebp
+	cmp	$12, %ebp
 	je	L(eq)
 
 	movzbl	12(%eax), %ecx
@@ -2239,7 +2239,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$13, %ebp
+	cmp	$13, %ebp
 	je	L(eq)
 
 	movzbl	13(%eax), %ecx
@@ -2248,7 +2248,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$14, %ebp
+	cmp	$14, %ebp
 	je	L(eq)
 
 	movzbl	14(%eax), %ecx
@@ -2257,7 +2257,7 @@ L(less16bytes_sncmp):
 	test	%cl, %cl
 	je	L(eq)
 
-	cmpl	$15, %ebp
+	cmp	$15, %ebp
 	je	L(eq)
 
 	movzbl	15(%eax), %ecx

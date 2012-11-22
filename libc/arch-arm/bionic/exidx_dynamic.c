@@ -25,8 +25,12 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+typedef long unsigned int *_Unwind_Ptr;
 
-#include <link.h>
+/* Stubbed out in libdl and defined in the dynamic linker.
+ * Same semantics as __gnu_Unwind_Find_exidx().
+ */
+extern _Unwind_Ptr dl_unwind_find_exidx(_Unwind_Ptr pc, int *pcount);
 
 /* For a given PC, find the .so that it belongs to.
  * Returns the base address of the .ARM.exidx section

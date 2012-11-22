@@ -47,20 +47,20 @@ __BEGIN_DECLS
 #define __ATOMIC_INLINE__ static __inline__ __attribute__((always_inline))
 
 __ATOMIC_INLINE__ int
-__atomic_cmpxchg(int old_value, int new_value, volatile int* ptr)
+__atomic_cmpxchg(int old, int _new, volatile int *ptr)
 {
     /* We must return 0 on success */
-    return __sync_val_compare_and_swap(ptr, old_value, new_value) != old_value;
+    return __sync_val_compare_and_swap(ptr, old, _new) != old;
 }
 
 __ATOMIC_INLINE__ int
-__atomic_swap(int new_value, volatile int *ptr)
+__atomic_swap(int _new, volatile int *ptr)
 {
-    int old_value;
+    int prev;
     do {
-        old_value = *ptr;
-    } while (__sync_val_compare_and_swap(ptr, old_value, new_value) != old_value);
-    return old_value;
+        prev = *ptr;
+    } while (__sync_val_compare_and_swap(ptr, prev, _new) != prev);
+    return prev;
 }
 
 __ATOMIC_INLINE__ int

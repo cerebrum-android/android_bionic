@@ -1,138 +1,82 @@
-#!/usr/bin/python
-
-"""Updates the tzdata file."""
-
-import ftplib
-import os
-import re
-import subprocess
-import sys
-import tarfile
-import tempfile
-
-# Find the bionic directory, searching upward from this script.
-bionic_libc_tools_zoneinfo_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
-bionic_libc_tools_dir = os.path.dirname(bionic_libc_tools_zoneinfo_dir)
-bionic_libc_dir = os.path.dirname(bionic_libc_tools_dir)
-bionic_dir = os.path.dirname(bionic_libc_dir)
-bionic_libc_zoneinfo_dir = '%s/libc/zoneinfo' % bionic_dir
-
-if not os.path.isdir(bionic_libc_tools_zoneinfo_dir):
-  print "Couldn't find bionic/libc/tools/zoneinfo!"
-  sys.exit(1)
-if not os.path.isdir(bionic_libc_zoneinfo_dir):
-  print "Couldn't find bionic/libc/zoneinfo!"
-  sys.exit(1)
-
-print 'Found bionic in %s...' % bionic_dir
-
-
-regions = ['africa', 'antarctica', 'asia', 'australasia', 'backward',
-           'etcetera', 'europe', 'northamerica', 'southamerica']
-
-
-def GetCurrentTzDataVersion():
-  return open('%s/tzdata' % bionic_libc_zoneinfo_dir).read().split('\x00', 1)[0]
-
-
-def WriteSetupFile():
-  """Writes the list of zones that ZoneCompactor should process."""
-  links = []
-  zones = []
-  for region in regions:
-    for line in open('extracted/%s' % region):
-      fields = line.split()
-      if fields:
-        if fields[0] == 'Link':
-          links.append('%s %s %s\n' % (fields[0], fields[1], fields[2]))
-          zones.append(fields[2])
-        elif fields[0] == 'Zone':
-          zones.append(fields[1])
-  zones.sort()
-
-  setup = open('setup', 'w')
-  for link in links:
-    setup.write(link)
-  for zone in zones:
-    setup.write('%s\n' % zone)
-  setup.close()
-
-
-def Retrieve(ftp, filename):
-  ftp.retrbinary('RETR %s' % filename, open(filename, 'wb').write)
-
-
-def UpgradeTo(ftp, data_filename):
-  """Downloads and repackages the given data from the given FTP server."""
-
-  new_version = re.search('(tzdata.+)\\.tar\\.gz', data_filename).group(1)
-  signature_filename = '%s.sign' % data_filename
-
-  # Switch to a temporary directory.
-  tmp_dir = tempfile.mkdtemp('-tzdata')
-  os.chdir(tmp_dir)
-  print 'Created temporary directory "%s"...' % tmp_dir
-
-  print 'Downloading data and signature...'
-  Retrieve(ftp, data_filename)
-  Retrieve(ftp, signature_filename)
-
-  print 'Verifying signature...'
-  # If this fails for you, you probably need to import Paul Eggert's public key:
-  # gpg --recv-keys ED97E90E62AA7E34
-  subprocess.check_call(['gpg', '--trusted-key=ED97E90E62AA7E34',
-                         '--verify', signature_filename, data_filename])
-
-  print 'Extracting...'
-  os.mkdir('extracted')
-  tar = tarfile.open(data_filename, 'r')
-  tar.extractall('extracted')
-
-  print 'Calling zic(1)...'
-  os.mkdir('data')
-  for region in regions:
-    if region != 'backward':
-      subprocess.check_call(['zic', '-d', 'data', 'extracted/%s' % region])
-
-  WriteSetupFile()
-
-  print 'Calling ZoneCompactor to update bionic to %s...' % new_version
-  libcore_src_dir = '%s/../libcore/luni/src/main/java/' % bionic_dir
-  subprocess.check_call(['javac', '-d', '.',
-                         '%s/ZoneCompactor.java' % bionic_libc_tools_zoneinfo_dir,
-                         '%s/libcore/util/ZoneInfo.java' % libcore_src_dir,
-                         '%s/libcore/io/BufferIterator.java' % libcore_src_dir])
-  subprocess.check_call(['java', 'ZoneCompactor',
-                         'setup', 'data', 'extracted/zone.tab',
-                         bionic_libc_zoneinfo_dir, new_version])
-
-
+#!/bin/bash
 # Run with no arguments from any directory, with no special setup required.
-# See http://www.iana.org/time-zones/ for more about the source of this data.
-def main():
-  print 'Looking for new tzdata...'
-  ftp = ftplib.FTP('ftp.iana.org')
-  ftp.login()
-  ftp.cwd('tz/releases')
-  tzdata_filenames = []
-  for filename in ftp.nlst():
-    if filename.startswith('tzdata20') and filename.endswith('.tar.gz'):
-      tzdata_filenames.append(filename)
-  tzdata_filenames.sort()
 
-  # If you're several releases behind, we'll walk you through the upgrades
-  # one by one.
-  current_version = GetCurrentTzDataVersion()
-  current_filename = '%s.tar.gz' % current_version
-  for filename in tzdata_filenames:
-    if filename > current_filename:
-      print 'Found new tzdata: %s' % filename
-      UpgradeTo(ftp, filename)
-      sys.exit(0)
+# Abort if any command returns an error exit status, or if an undefined
+# variable is used.
+set -e
+set -u
 
-  print 'You already have the latest tzdata (%s)!' % current_version
-  sys.exit(0)
+echo "Looking for bionic..."
+bionic_dir=$(cd $(dirname $0)/../../.. && pwd)
+bionic_zoneinfo_dir=$bionic_dir/libc/zoneinfo
+bionic_zoneinfo_tools_dir=$bionic_dir/libc/tools/zoneinfo
+if [[ ! -d "$bionic_zoneinfo_dir" || ! -d "$bionic_zoneinfo_tools_dir" ]]; then
+  echo "Can't find bionic's zoneinfo directories!"
+  exit 1
+fi
 
+echo "Switching to temporary directory..."
+temp_dir=`mktemp -d`
+cd $temp_dir
+trap "rm -rf $temp_dir; exit" INT TERM EXIT
 
-if __name__ == '__main__':
-  main()
+# URL from "Sources for Time Zone and Daylight Saving Time Data"
+# http://www.twinsun.com/tz/tz-link.htm
+echo "Looking for new tzdata..."
+wget -N --no-verbose 'ftp://munnari.oz.au/pub/tzdata*.tar.gz'
+zoneinfo_version_file=$bionic_zoneinfo_dir/zoneinfo.version
+if [ -f "$zoneinfo_version_file" ]; then
+  current_version=tzdata`sed s/\n// < $zoneinfo_version_file`
+else
+  current_version=missing
+fi
+latest_archive=`ls -r -v tzdata*.tar.gz | head -n1`
+latest_version=`basename $latest_archive .tar.gz`
+if [ "$current_version" == "$latest_version" ]; then
+  echo "You already have the latest tzdata ($latest_version)!"
+  exit 1
+fi
+
+md5_sum=`md5sum $latest_archive`
+echo "MD5: $md5_sum"
+
+echo "Extracting $latest_version..."
+mkdir $latest_version
+tar -C $latest_version -zxf $latest_archive
+
+echo "Compiling $latest_version..."
+mkdir data
+for i in \
+    africa \
+    antarctica \
+    asia \
+    australasia \
+    etcetera \
+    europe \
+    factory \
+    northamerica \
+    solar87 \
+    solar88 \
+    solar89 \
+    southamerica
+do
+    zic -d data $latest_version/$i
+done
+
+echo "Compacting $latest_version..."
+(
+    cat $latest_version/* | grep '^Link' | awk '{print $1, $2, $3}'
+    (
+        cat $latest_version/* | grep '^Zone' | awk '{print $2}'
+        cat $latest_version/* | grep '^Link' | awk '{print $3}'
+    ) | LC_ALL="C" sort
+) | grep -v Riyadh8 > setup
+
+javac -d . \
+    $bionic_zoneinfo_tools_dir/ZoneCompactor.java \
+    $bionic_zoneinfo_tools_dir/ZoneInfo.java
+java -classpath . ZoneCompactor setup data
+
+echo "Updating bionic to $latest_version..."
+mv zoneinfo.dat zoneinfo.idx $bionic_zoneinfo_dir
+echo $latest_version | sed 's/tzdata//' > $bionic_zoneinfo_dir/zoneinfo.version

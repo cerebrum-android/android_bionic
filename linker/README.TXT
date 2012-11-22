@@ -8,6 +8,44 @@ This document provides several notes related to the design of the Android
 dynamic linker.
 
 
+Prelinking:
+-----------
+
+System libraries in Android are internally prelinked, which means that
+any internal relocations within them are stripped from the corresponding
+shared object, in order to reduce size and speed up loading.
+
+Such libraries can only be loaded at the very specific virtual memory address
+they have been prelinked to (during the build process). The list of prelinked
+system libraries and their corresponding virtual memory address is found in
+the file:
+
+   build/core/prelink-linux-<arch>.map
+
+It should be updated each time a new system library is added to the
+system.
+
+The prelink step happens at build time, and uses the 'soslim' and 'apriori'
+tools:
+
+  - 'apriori' is the real prelink tool which removes relocations from the
+    shared object, however, it must be given a list of symbols to remove
+    from the file.
+
+  - 'soslim' is used to find symbols in an executable ELF file
+    and generate a list that can be passed to 'apriori'.
+
+By default, these tools are only used to remove internal symbols from
+libraries, though they have been designed to allow more aggressive
+optimizations (e.g. 'global' prelinking and symbol stripping, which
+prevent replacing individual system libraries though).
+
+You can disable prelinking at build time by modifying your Android.mk with
+a line like:
+
+    LOCAL_PRELINK_MODULE := false
+
+
 Initialization and Termination functions:
 -----------------------------------------
 
@@ -78,6 +116,24 @@ are in charge of calling them explicitly.
 
 Debugging:
 ----------
+
+It is possible to enable debug output in the dynamic linker. To do so,
+follow these steps:
+
+1/ Modify the line in Android.mk that says:
+
+    LOCAL_CFLAGS += -DLINKER_DEBUG=0
+
+  Into the following:
+
+    LOCAL_CFLAGS += -DLINKER_DEBUG=1
+
+2/ Force-rebuild the dynamic linker:
+
+    cd bionic/linker
+    mm -B
+
+3/ Rebuild a new system image.
 
 You can increase the verbosity of debug traces by defining the DEBUG
 environment variable to a numeric value from 0 to 2. This will only

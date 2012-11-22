@@ -25,8 +25,7 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include <link.h>
+typedef long unsigned int *_Unwind_Ptr;
 
 /* Find the .ARM.exidx section (which in the case of a static executable
  * can be identified through its start and end symbols), and return its

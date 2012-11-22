@@ -146,6 +146,7 @@ void pthread_exit(void * retval);
 int pthread_join(pthread_t thid, void ** ret_val);
 int pthread_detach(pthread_t  thid);
 
+__attribute__((const))
 pthread_t pthread_self(void);
 int pthread_equal(pthread_t one, pthread_t two);
 
@@ -309,5 +310,10 @@ extern void  __pthread_cleanup_pop(__pthread_cleanup_t*  c,
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+/************ TO FIX ************/
+
+#define LONG_LONG_MAX __LONG_LONG_MAX__
+#define LONG_LONG_MIN (-__LONG_LONG_MAX__ - 1)
 
 #endif /* _PTHREAD_H_ */

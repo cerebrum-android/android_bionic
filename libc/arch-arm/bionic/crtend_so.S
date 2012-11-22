@@ -26,6 +26,13 @@
  * SUCH DAMAGE.
  */
 
-#if defined(__linux__) && defined(__ELF__)
-	.section .note.GNU-stack,"",%progbits
-#endif
+/* This is the same than crtend.S except that a shared library
+ * cannot have a .preinit_array
+ */
+	
+	.section .init_array, "aw"
+	.long 0
+
+	.section .fini_array, "aw"
+	.long 0
+
